@@ -169,15 +169,21 @@ def delete_advertisement(ad_id: int, current_user: Users, advertisement: Adverti
 @app.route('/advertisement/<int:ad_id>', methods=['PATCH'])
 @require_owner
 def edit_advertisement(ad_id: int, current_user: Users, advertisement: Advertisement) -> tuple:
-    item = advertisement.query.get_or_404(ad_id)
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No JSON data provided"}), 400
 
     with SessionLocal() as session:
-        item.title = request.form['title']
-        item.description = request.form['description']
+        # Привязываем объект к текущей сессии
+        ad = session.merge(advertisement)
+
+        if 'title' in data:
+            ad.title = data['title']
+        if 'description' in data:
+            ad.description = data['description']
 
         session.commit()
-
-    return jsonify(item.to_dict()), 200
+        return jsonify(ad.to_dict()), 200
 
 
 if __name__ == '__main__':
