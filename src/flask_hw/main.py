@@ -166,5 +166,19 @@ def delete_advertisement(ad_id: int, current_user: Users, advertisement: Adverti
         return '', 204
 
 
+@app.route('/advertisement/<int:ad_id>', methods=['PATCH'])
+@require_owner
+def edit_advertisement(ad_id: int, current_user: Users, advertisement: Advertisement) -> tuple:
+    item = advertisement.query.get_or_404(ad_id)
+
+    with SessionLocal() as session:
+        item.title = request.form['title']
+        item.description = request.form['description']
+
+        session.commit()
+
+    return jsonify(item.to_dict()), 200
+
+
 if __name__ == '__main__':
     app.run()
